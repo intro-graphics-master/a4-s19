@@ -11,7 +11,7 @@ const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
 
 const Main_Scene =
 class Solar_System extends Scene
-{                                             // **Solar_System**:  Your Assingment's Scene.
+{                                             // **Solar_System**:  Your Assignment's Scene.
   constructor()
     {                  // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
       super();
