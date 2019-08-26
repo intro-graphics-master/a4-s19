@@ -1,7 +1,7 @@
 import {tiny, defs} from './assignment-4-resources.js';
-                                                                // Pull these names into this module's scope for convenience:
-const { Vec, Mat, Mat4, Color, Light, Shape, Shader, Material, Texture,
-         Scene, Canvas_Widget, Code_Widget, Text_Widget } = tiny;
+                                                  // Pull these names into this module's scope for convenience:
+const { Vector, Vector3, vec, vec3, vec4, color, Matrix, Mat4, Light, Shape, Material, Shader, Texture, Scene,
+        Canvas_Widget, Code_Widget, Text_Widget } = tiny;
 const { Cube, Subdivision_Sphere, Transforms_Sandbox_Base } = defs;
 
     // Now we have loaded everything in the files tiny-graphics.js, tiny-graphics-widgets.js, and assignment-4-resources.js.
@@ -26,7 +26,7 @@ class Solar_System extends Scene
 
                                                         // TODO (#1d): Modify one sphere shape's existing texture 
                                                         // coordinates in place.  Multiply them all by 5.
-      // this.shapes.ball_repeat.arrays.texture_coord.forEach( coord => coord
+      // for( let coord of this.shapes.ball_repeating_texture.arrays.texture_coord )
       
                                                               // *** Shaders ***
 
@@ -51,27 +51,27 @@ class Solar_System extends Scene
                                               // TODO (#2):  Complete this list with any additional materials you need:
 
       this.materials = { plastic: new Material( phong_shader, 
-                                    { ambient: 0, diffusivity: 1, specularity: 0, color: Color.of( 1,.5,1,1 ) } ),
+                                    { ambient: 0, diffusivity: 1, specularity: 0, color: color( 1,.5,1,1 ) } ),
                    plastic_stars: new Material( texture_shader_2,    
                                     { texture: new Texture( "assets/stars.png" ),
-                                      ambient: 0, diffusivity: 1, specularity: 0, color: Color.of( .4,.4,.4,1 ) } ),
+                                      ambient: 0, diffusivity: 1, specularity: 0, color: color( .4,.4,.4,1 ) } ),
                            metal: new Material( phong_shader,
-                                    { ambient: 0, diffusivity: 1, specularity: 1, color: Color.of( 1,.5,1,1 ) } ),
+                                    { ambient: 0, diffusivity: 1, specularity: 1, color: color( 1,.5,1,1 ) } ),
                      metal_earth: new Material( texture_shader_2,    
                                     { texture: new Texture( "assets/earth.gif" ),
-                                      ambient: 0, diffusivity: 1, specularity: 1, color: Color.of( .4,.4,.4,1 ) } ),
+                                      ambient: 0, diffusivity: 1, specularity: 1, color: color( .4,.4,.4,1 ) } ),
                       black_hole: new Material( black_hole_shader ),
-                             sun: new Material( sun_shader, { ambient: 1, color: Color.of( 0,0,0,1 ) } )
+                             sun: new Material( sun_shader, { ambient: 1, color: color( 0,0,0,1 ) } )
                        };
 
                                   // Some setup code that tracks whether the "lights are on" (the stars), and also
                                   // stores 30 random location matrices for drawing stars behind the solar system:
       this.lights_on = false;
       this.star_matrices = [];
-      for( let i=0; i<30; i++ )
-        this.star_matrices.push( Mat4.rotation( Math.PI/2 * (Math.random()-.5), Vec.of( 0,1,0 ) )
-                         .times( Mat4.rotation( Math.PI/2 * (Math.random()-.5), Vec.of( 1,0,0 ) ) )
-                         .times( Mat4.translation([ 0,0,-150 ]) ) );
+      for( let i = 0; i < 30; i++ )
+        this.star_matrices.push( Mat4.rotation( Math.PI/2 * (Math.random()-.5), 0,1,0 )
+                         .times( Mat4.rotation( Math.PI/2 * (Math.random()-.5), 1,0,0 ) )
+                         .times( Mat4.translation( 0,0,-150 ) ) );
     }
   make_control_panel()
     {                                 // make_control_panel(): Sets up a panel of interactive HTML elements, including
@@ -86,7 +86,7 @@ class Solar_System extends Scene
                                                      // different matrix value to control where the shape appears.
      
                            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-      if( !context.scratchpad.controls ) 
+      if( !context.scratchpad.controls )
         {                       // Add a movement controls panel to the page:
           this.children.push( context.scratchpad.controls = new defs.Movement_Controls() ); 
 
@@ -96,21 +96,20 @@ class Solar_System extends Scene
                     // Define the global camera and projection matrices, which are stored in program_state.  The camera
                     // matrix follows the usual format for transforms, but with opposite values (cameras exist as 
                     // inverted matrices).  The projection matrix follows an unusual format and determines how depth is 
-                    // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() and
+                    // treated when projecting 3D points onto a plane.  The Mat4 functions perspective() or
                     // orthographic() automatically generate valid matrices for one.  The input arguments of
                     // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.          
-          program_state.set_camera( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
+          program_state.set_camera( Mat4.look_at( vec3( 0,10,20 ), vec3( 0,0,0 ), vec3( 0,1,0 ) ) );
           this.initial_camera_location = program_state.camera_inverse;
-          program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 200 );
         }
-
+      program_state.projection_transform = Mat4.perspective( Math.PI/4, context.width/context.height, 1, 200 );
                                                                       // Find how much time has passed in seconds; we can use
                                                                       // time as an input when calculating new transforms:
       const t = program_state.animation_time / 1000;
 
-                                                  // Have to reset this for each frame:
+                                                  // Start with a new array of matrices for each frame:
       this.camera_teleporter.cameras = [];
-      this.camera_teleporter.cameras.push( Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ) );
+      this.camera_teleporter.cameras.push( Mat4.look_at( vec3( 0,10,20 ), vec3( 0,0,0 ), vec3( 0,1,0 ) ) );
 
 
                                              // Variables that are in scope for you to use:
@@ -130,18 +129,16 @@ class Solar_System extends Scene
       Start coding down here!!!!
       **********************************/         
 
-      const blue = Color.of( 0,0,.5,1 ), yellow = Color.of( .5,.5,0,1 );
-
                                     // Variable model_transform will be a local matrix value that helps us position shapes.
                                     // It starts over as the identity every single frame - coordinate axes at the origin.
       let model_transform = Mat4.identity();
 
-                                                  // TODO (#3b):  Use the time-varying value of sun_size to create a scale matrix 
-                                                  // for the sun. Also use it to create a color that turns redder as sun_size
+                                                  // TODO (#3c):  Use the time-varying value of sun_size to create a scale matrix 
+                                                  // for the sun. Also use it to create a color that turns yellower as sun_size
                                                   // increases, and bluer as it decreases.
       const smoothly_varying_ratio = .5 + .5 * Math.sin( 2 * Math.PI * t/10 ),
             sun_size = 1 + 2 * smoothly_varying_ratio,
-                 sun = undefined,
+          sun_matrix = undefined,
            sun_color = undefined;
 
       this.materials.sun.color = sun_color;     // Assign our current sun color to the existing sun material.          
@@ -149,10 +146,10 @@ class Solar_System extends Scene
                                                 // *** Lights: *** Values of vector or point lights.  They'll be consulted by 
                                                 // the shader when coloring shapes.  See Light's class definition for inputs.
 
-                                                // TODO (#3c):  Replace with a point light located at the origin, with the sun's color
+                                                // TODO (#3d):  Replace with a point light located at the origin, with the sun's color
                                                 // (created above).  For the third argument pass in the point light's size.  Use
-                                                // 10 to the power of sun_size.
-      program_state.lights = [ new Light( Vec.of( 0,0,0,1 ), Color.of( 1,1,1,1 ), 100000 ) ];
+                                                // 10 to the power of sun_size instead of what's here.
+      program_state.lights = [ new Light( vec4( 0,0,0,1 ), color( 1,1,1,1 ), 100000 ) ];
 
                             // TODO (#5c):  Throughout your program whenever you use a material (by passing it into draw),
                             // pass in a modified version instead.  Call .override( modifier ) on the material to
@@ -160,7 +157,7 @@ class Solar_System extends Scene
                             // new value based on our light switch.                         
       const modifier = this.lights_on ? { ambient: 0.3 } : { ambient: 0.0 };
 
-                                                // TODO (#3d):   Draw the sun using its matrix (crated by you above) and material.
+                                                // TODO (#3a):   Draw the sun using its matrix (crated by you above) and material.
      
                                                 // TODO (#4d1):  Draw planet 1 orbiting at 5 units radius, revolving AND rotating at 1 radian/sec.
       
@@ -190,18 +187,19 @@ class Solar_System extends Scene
       // ***** BEGIN TEST SCENE *****               
                                           // TODO:  Delete (or comment out) the rest of display(), starting here:
 
-      program_state.set_camera( Mat4.translation([ 0,3,-10 ]) );
+      const blue = color( 0,0,.5,1 ), yellow = color( .5,.5,0,1 );
+      program_state.set_camera( Mat4.translation( 0,3,-10 ) );
       const angle = Math.sin( t );
-      const light_position = Mat4.rotation( angle, [ 1,0,0 ] ).times( Vec.of( 0,-1,1,0 ) );
-      program_state.lights = [ new Light( light_position, Color.of( 1,1,1,1 ), 1000000 ) ];
+      const light_position = Mat4.rotation( angle, 1,0,0 ).times( vec4( 0,-1,1,0 ) );
+      program_state.lights = [ new Light( light_position, color( 1,1,1,1 ), 1000000 ) ];
       model_transform = Mat4.identity();
       this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic.override( yellow ) );
-      model_transform.post_multiply( Mat4.translation([ 0, -2, 0 ]) );
+      model_transform.post_multiply( Mat4.translation( 0, -2, 0 ) );
       this.shapes.ball_4.draw( context, program_state, model_transform, this.materials.metal_earth.override( blue ) );
-      model_transform.post_multiply( Mat4.rotation( t, Vec.of( 0,1,0 ) ) )
-      model_transform.post_multiply( Mat4.rotation( 1, Vec.of( 0,0,1 ) )
-                             .times( Mat4.scale      ([ 1,   2, 1 ]) )
-                             .times( Mat4.translation([ 0,-1.5, 0 ]) ) );
+      model_transform.post_multiply( Mat4.rotation( t, 0,1,0 ) )
+      model_transform.post_multiply( Mat4.rotation( 1, 0,0,1 )
+                             .times( Mat4.scale( 1, 2, 1 ) )
+                             .times( Mat4.translation( 0,-1.5, 0 ) ) );
       this.shapes.box.draw( context, program_state, model_transform, this.materials.plastic_stars.override( yellow ) );
 
       // ***** END TEST SCENE *****
@@ -234,23 +232,24 @@ class Camera_Teleporter extends Scene
     {                                // make_control_panel(): Sets up a panel of interactive HTML elements, including
                                      // buttons with key bindings for affecting this scene, and live info readouts.
       
-      this.key_triggered_button(  "Enable",       [ "e" ], () => this.enabled = true  );
+      this.key_triggered_button(  "Enable",          [ "e" ], () => this.enabled = true  );
       this.key_triggered_button( "Disable", [ "Shift", "E" ], () => this.enabled = false );
       this.new_line();
       this.key_triggered_button( "Previous location", [ "g" ], this.decrease );
       this.key_triggered_button(              "Next", [ "h" ], this.increase );
       this.new_line();
       this.live_string( box => { box.textContent = "Selected camera location: " + this.selection } );
-    }  
+    }
+            // Don't allow selection of negative or out-of-range indices:
   increase() { this.selection = Math.min( this.selection + 1, Math.max( this.cameras.length-1, 0 ) ); }
-  decrease() { this.selection = Math.max( this.selection - 1, 0 ); }   // Don't allow selection of negative indices.
+  decrease() { this.selection = Math.max( this.selection - 1, 0 ); }
   display( context, program_state )
   {
     const desired_camera = this.cameras[ this.selection ];
     if( !desired_camera || !this.enabled )
       return;
     const dt = program_state.animation_delta_time;
-    program_state.set_camera( desired_camera.map( (x,i) => Vec.from( program_state.camera_inverse[i] ).mix( x, .01*dt ) ) );    
+    program_state.set_camera( desired_camera.map( (x,i) => Vector.from( program_state.camera_inverse[i] ).mix( x, .01*dt ) ) );    
   }
 }
 
@@ -263,23 +262,25 @@ class Planar_Star extends Shape
   constructor()
     { super( "position", "normal", "texture_coord" );
                     
-      this.arrays.position.push( Vec.of( 0,0,0 ) );
+      this.arrays.position.push( vec3( 0,0,0 ) );
       for( let i = 0; i < 11; i++ )
         {
-          const spin = Mat4.rotation( i * 2*Math.PI/10, Vec.of( 0,0,-1 ) );
+          const spin = Mat4.rotation( i * 2*Math.PI/10, 0,0,-1 );
 
           const radius = i%2 ? 4 : 7;
-          const new_point = spin.times( Vec.of( 0,radius,0,1 ) ).to3();
+          const new_point = spin.times( vec4( 0,radius,0,1 ) ).to3();
 
           this.arrays.position.push( new_point );
           if( i > 0 )
             this.indices.push( 0, i, i+1 )
         }         
                  
-      this.arrays.normal        = this.arrays.position.map( p => Vec.of( 0,0,-1 ) );
+      this.arrays.normal = this.arrays.position.map( p => vec3( 0,0,-1 ) );
 
                                       // TODO (#5a):  Fill in some reasonable texture coordinates for the star:
-      // this.arrays.texture_coord = this.arrays.position.map( p => 
+      // for( let p of this.arrays.position )
+      // { 
+      // }
     }
 }
 
@@ -340,8 +341,9 @@ class Gouraud_Shader extends defs.Phong_Shader
 
 
 const Black_Hole_Shader = defs.Black_Hole_Shader =
-class Black_Hole_Shader extends Shader         // Simple "procedural" texture shader, with texture coordinates but without an input image.
-{ update_GPU( context, gpu_addresses, program_state, model_transform, material )
+class Black_Hole_Shader extends Shader
+{               // TODO (#EC 1):  Create moon 1's shader, which uses texture coordinates but without an input image.
+  update_GPU( context, gpu_addresses, program_state, model_transform, material )
       { 
                   // update_GPU(): Define how to synchronize our JavaScript's variables to the GPU's.  This is where the shader 
                   // recieves ALL of its inputs.  Every value the GPU wants is divided into two categories:  Values that belong
@@ -382,7 +384,7 @@ class Black_Hole_Shader extends Shader         // Simple "procedural" texture sh
     { 
                           // TODO (#EC 1f):  Using the input UV texture coordinates and animation time,
                           // calculate a color that makes moving waves as V increases.  Store
-                          // the result in gl_FragColor.
+                          // the result in the special built-in "gl_FragColor" variable.
       return this.shared_glsl_code() + `
         void main()
         { 
@@ -394,7 +396,7 @@ class Black_Hole_Shader extends Shader         // Simple "procedural" texture sh
 
 const Sun_Shader = defs.Sun_Shader =
 class Sun_Shader extends Shader
-{ update_GPU( context, gpu_addresses, graphics_state, model_transform, material )
+{ update_GPU( context, gpu_addresses, program_state, model_transform, material )
     {
                       // TODO (#EC 2): Pass the same information to the shader as for EC part 1.  Additionally
                       // pass material.color to the shader.
